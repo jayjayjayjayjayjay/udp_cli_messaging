@@ -15,9 +15,7 @@ fn parse_ip(ip: &str) -> Result<SocketAddr> {
 }
 
 fn tx(udp_socket: &UdpSocket, tx_socket_addr: &SocketAddr, message: &String) -> Result<()> {
-    udp_socket
-        .send_to(message.as_bytes(), tx_socket_addr)
-        .expect("failed to send");
+    udp_socket.send_to(message.as_bytes(), tx_socket_addr)?;
     Ok(())
 }
 
@@ -59,7 +57,7 @@ fn main() -> Result<()> {
         print!("\x1B[F");
         print!("Sending:{}", &buffer);
 
-        tx(&udp_socket, &target_socket_addr, &buffer);
+        let _ =tx(&udp_socket, &target_socket_addr, &buffer);
     }
 
     Ok(())
