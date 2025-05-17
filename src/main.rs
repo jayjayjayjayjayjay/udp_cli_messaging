@@ -1,8 +1,8 @@
-use anyhow::{Result, anyhow};
-use std::env;
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6, UdpSocket};
 use std::str::{FromStr, from_utf8};
-use std::{io, thread};
+use std::{env, io, thread};
+
+use anyhow::{Result, anyhow};
 
 fn parse_ip(ip: &str) -> Result<SocketAddr> {
     match SocketAddrV4::from_str(ip) {
@@ -57,7 +57,7 @@ fn main() -> Result<()> {
         print!("\x1B[F");
         print!("Sending:{}", &buffer);
 
-        let _ =tx(&udp_socket, &target_socket_addr, &buffer);
+        let _ = tx(&udp_socket, &target_socket_addr, &buffer);
     }
 
     Ok(())
