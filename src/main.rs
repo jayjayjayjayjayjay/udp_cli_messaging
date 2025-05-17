@@ -2,16 +2,8 @@ use anyhow::{Result, anyhow};
 use std::env;
 use std::net::UdpSocket;
 use std::net::{SocketAddr, SocketAddrV4, SocketAddrV6};
-use std::str::FromStr;
-
-fn parse_tx_or_rx(tx_or_rx: &str) -> Result<bool> {
-    if tx_or_rx == "rx" {
-        return Ok(true);
-    } else if tx_or_rx == "tx" {
-        return Ok(false);
-    }
-    Err(anyhow!("Neither tx or rx option passed as param"))
-}
+use std::str::{FromStr,from_utf8};
+use std::{thread,io};
 
 fn parse_ip(ip: &str) -> Result<SocketAddr> {
     match SocketAddrV4::from_str(ip) {
@@ -23,34 +15,38 @@ fn parse_ip(ip: &str) -> Result<SocketAddr> {
     }
 }
 
-fn tx(args: &Vec<String>) -> Result<()> {
-    let tx_socket_addr = parse_ip(&args[2])?;
-    let socket1 = UdpSocket::bind("127.0.0.1:34254")?;
+fn tx(tx_socket_addr: &SocketAddr, message:&String) -> Result<()> {
+    let socket1 = UdpSocket::bind("127.0.0.1:12336")?;
     socket1
-        .send_to(&[2; 10], tx_socket_addr)
+        .send_to(message.as_bytes(), tx_socket_addr)
         .expect("failed to send");
     Ok(())
 }
 
 fn rx() -> Result<()> {
-    let mut buf: [u8; 10] = [3; 10];
-    let rx_socket = UdpSocket::bind("127.0.0.1:12345")?;
-    rx_socket.recv_from(&mut buf).expect("failed to rec");
-    for elem in buf {
-        println!("{}", elem);
+    let mut buf: [u8; 1000] = [0; 1000];
+    let rx_socket = UdpSocket::bind("127.0.0.1:12346")?;
+    while true {
+    let (bytes_read,_)= rx_socket.recv_from(&mut buf)?;
+    println!("Received:{}",from_utf8(&buf[..bytes_read])?);
     }
     Ok(())
 }
 
 fn main() -> Result<()> {
-    {
-        let args: Vec<String> = env::args().collect();
-        let rx_option = parse_tx_or_rx(&args[1])?;
+    let args: Vec<String> = env::args().collect();
+    let tx_socket_addr = parse_ip(&args[1])?;
+    //thread::spawn(move || {tx(&tx_socket_addr);});
+    thread::spawn(move || {rx()});
+    while true{
+    let mut buffer = String::new();
+    let line_length = io::stdin().read_line(&mut buffer)?;
+    print!("\x1B[F"); 
+    println!("Sending:{}",&buffer);
+    tx(&tx_socket_addr,&buffer);
+    //println!("{}",buffer);
 
-        if !rx_option {
-            tx(&args);
-        };
-        rx();
-    } // the socket is closed here
+    }
+
     Ok(())
 }
