@@ -48,6 +48,7 @@ fn main() -> Result<()> {
 
     // We start the rx thread
     thread::spawn(move || rx(&udp_socket_clone));
+    println!("Started...\n");
 
     while true {
         let mut buffer = String::new();
