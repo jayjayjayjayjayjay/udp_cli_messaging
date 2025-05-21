@@ -1,5 +1,5 @@
 [package]
-name = "fast_file_transfer"
+name = "udp_cli_messaging"
 version = "0.1.0"
 edition = "2024"
 
